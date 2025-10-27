@@ -6,11 +6,15 @@ import { createClient } from '@supabase/supabase-js'
 const route = useRoute(); const router = useRouter()
 const sessionId = route.params.id; const token = route.params.token
 
+// token をヘッダに入れたクライアント（RLS用）
 const db = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY,
   { global: { headers: { 'x-session-token': String(token) } } }
 )
+
+// 追加：セッションの情報を保持
+const session = ref(null)     // { id, title, created_at }
 
 const members = ref([])
 const expenses = ref([])
@@ -19,18 +23,29 @@ const payerId = ref(null); const selected = ref([])
 const loading = ref(false)
 
 async function loadAll() {
-  const { data: s, error: se } = await db.from('sessions')
-    .select('id').eq('id', sessionId).eq('token', token).single()
+  // ① セッション情報を取得（title, created_at を取る）
+  const { data: s, error: se } = await db
+    .from('sessions')
+    .select('id, title, created_at')
+    .eq('id', sessionId).eq('token', token)
+    .single()
   if (se || !s) { alert('セッションが見つかりません'); router.push('/'); return }
+  session.value = s
 
-  const { data: m } = await db.from('members')
-    .select('id,name,active').eq('session_id', sessionId).eq('active', true).order('id')
+  // ② メンバー
+  const { data: m } = await db
+    .from('members')
+    .select('id,name,active')
+    .eq('session_id', sessionId).eq('active', true).order('id')
   members.value = m ?? []
   if (members.value.length && payerId.value == null) payerId.value = members.value[0].id
   if (selected.value.length === 0) selected.value = members.value.map(x=>x.id)
 
-  const { data: e } = await db.from('expenses')
-    .select('payer_member_id,amount_jpy,beneficiaries,memo').eq('session_id', sessionId).order('id')
+  // ③ 出費
+  const { data: e } = await db
+    .from('expenses')
+    .select('payer_member_id,amount_jpy,beneficiaries,memo')
+    .eq('session_id', sessionId).order('id')
   expenses.value = e ?? []
 }
 
@@ -38,8 +53,11 @@ async function addExpense() {
   if (!amount.value || !payerId.value || selected.value.length === 0) return alert('入力が足りません')
   loading.value = true
   const { error } = await db.from('expenses').insert([{
-    session_id: sessionId, payer_member_id: payerId.value,
-    amount_jpy: amount.value, beneficiaries: selected.value, memo: memo.value || null
+    session_id: sessionId,
+    payer_member_id: payerId.value,
+    amount_jpy: amount.value,
+    beneficiaries: selected.value,
+    memo: memo.value || null
   }])
   loading.value = false
   if (error) return alert(error.message)
@@ -57,7 +75,7 @@ function settleGreedy(bal) {
   const P=[],N=[]; for (const [id,v] of Object.entries(bal)) {
     const n=Number(id); if (v>0) P.push({id:n,v}); else if (v<0) N.push({id:n,v:-v})
   } P.sort((a,b)=>b.v-a.v); N.sort((a,b)=>b.v-a.v)
-  const edges=[]; let i=0, j=0; while (i<P.length&&j<N.length) {
+  const edges=[]; let i=0,j=0; while (i<P.length&&j<N.length) {
     const x=Math.min(P[i].v,N[j].v); edges.push({from:N[j].id,to:P[i].id,amount:x})
     if ((P[i].v-=x)===0) i++; if ((N[j].v-=x)===0) j++
   } return edges
@@ -66,9 +84,13 @@ const balances = computed(()=>computeBalances(expenses.value))
 const edges = computed(()=>settleGreedy(balances.value))
 function nameOf(id){ return members.value.find(m=>m.id===id)?.name ?? `#${id}` }
 
-function copyLink(){
-  navigator.clipboard.writeText(location.href).then(()=>alert('リンクをコピーしました'))
-}
+const createdLabel = computed(() => {
+  const d = session.value?.created_at
+  if (!d) return ''
+  return new Date(d).toLocaleDateString('ja-JP', { year:'numeric', month:'short', day:'numeric' })
+})
+
+function copyLink(){ navigator.clipboard.writeText(location.href).then(()=>alert('リンクをコピーしました')) }
 
 onMounted(async () => {
   await loadAll()
@@ -81,28 +103,29 @@ onMounted(async () => {
 
 <template>
   <main class="container" style="display:flex; flex-direction:column; gap:14px;">
-    <div class="row" style="justify-content:space-between;">
-      <span class="badge">waliga</span>
-      <div class="row" style="gap:8px;">
-        <button class="ghost" @click="$router.push('/')">別の清算記録を作成</button>
-        <button class="ghost" @click="copyLink">リンクをコピー</button>
+    <!-- ここが新規：セッション名と作成日 -->
+    <div class="card" v-if="session">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <h2 style="margin:0">{{ session.title || 'セッション' }}</h2>
+          <div class="small">作成日: {{ createdLabel }}</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="ghost" @click="$router.push('/')">新しいセッション</button>
+          <button class="ghost" @click="copyLink">リンクをコピー</button>
+        </div>
       </div>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">出費を記録</h3>
-
-      <div class="spacer"></div>
-      <label class="small">メモ</label>
-      <input v-model="memo" placeholder="晩飯代" />
-
-      <label class="small">払った人</label>
+      <h3 style="margin:0 0 8px;">出費追加</h3>
+      <label class="small">支払者</label>
       <select v-model.number="payerId">
         <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
       </select>
 
       <div class="spacer"></div>
-      <label class="small">払ってもらった人</label>
+      <label class="small">対象メンバー</label>
       <div class="row">
         <label v-for="m in members" :key="m.id" style="display:flex; gap:6px; align-items:center;">
           <input type="checkbox" :value="m.id" v-model="selected" /> {{ m.name }}
@@ -113,13 +136,16 @@ onMounted(async () => {
       <label class="small">金額（円）</label>
       <input type="number" v-model.number="amount" min="1" inputmode="numeric" placeholder="3000" />
 
+      <div class="spacer"></div>
+      <label class="small">メモ</label>
+      <input v-model="memo" placeholder="夕食代など" />
 
       <div class="spacer"></div>
       <button :disabled="loading" @click="addExpense" style="width:100%;">追加する</button>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">支払い先</h3>
+      <h3 style="margin:0 0 8px;">清算案</h3>
       <div v-if="edges.length===0" class="small">清算は不要です</div>
       <ul v-else class="list">
         <li v-for="(e,i) in edges" :key="i">
@@ -129,14 +155,13 @@ onMounted(async () => {
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">出費の履歴</h3>
+      <h3 style="margin:0 0 8px;">出費一覧</h3>
       <ul class="list">
         <li v-for="(e,i) in expenses" :key="i">
-          <span class="label">{{ e.memo ?? '' }}</span>
-          は<b>{{ nameOf(e.payer_member_id) }}</b> が
+          <b>{{ nameOf(e.payer_member_id) }}</b> が
           <span class="badge">{{ e.amount_jpy }} 円</span>
-          を {{ e.beneficiaries.map(nameOf).join(' / ') }} の分を払った
-          
+          を {{ e.beneficiaries.map(nameOf).join(' / ') }} の分として
+          <span class="small">{{ e.memo ?? '' }}</span>
         </li>
       </ul>
     </div>

@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { supabase } from '../api/supabase'
 
 const router = useRouter()
-const title = ref('')
+const title = ref('')              // ← セッション名
 const membersText = ref('A\nB\nC')
 const loading = ref(false)
 
@@ -21,16 +21,21 @@ async function createSession() {
   loading.value = true
   const token = genToken()
 
+  // ① sessions へ title と token を保存（created_at は DB が自動）
   const { data: sess, error: e1 } = await supabase
-    .from('sessions').insert([{ title: title.value, token }]).select('id').single()
+    .from('sessions')
+    .insert([{ title: title.value, token }])
+    .select('id')
+    .single()
   if (e1 || !sess) { loading.value=false; return alert(e1?.message ?? 'sessions insert失敗') }
 
+  // ② members を一括作成
   const rows = names.map(n => ({ session_id: sess.id, name: n, active: true }))
   const { error: e2 } = await supabase.from('members').insert(rows)
   if (e2) { loading.value=false; return alert(e2.message) }
 
   loading.value = false
-  router.push(`/s/${sess.id}/${token}`)
+  router.push(`/s/${sess.id}/${token}`)   // ③ 自動遷移
 }
 </script>
 
@@ -38,11 +43,10 @@ async function createSession() {
   <main class="container">
     <div class="card">
       <h2 style="margin:0 0 8px">セッション作成</h2>
-      <p class="small">スマホで使いやすいように最小入力だけ</p>
       <div class="spacer"></div>
 
       <label class="small">タイトル</label>
-      <input v-model="title" placeholder="沖縄旅行 Day1" />
+      <input v-model="title" placeholder="名古屋旅行 1日目" />
 
       <div class="spacer"></div>
       <label class="small">メンバー（1行に1人）</label>
