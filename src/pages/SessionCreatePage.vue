@@ -107,7 +107,7 @@ async function createSession() {
           autocapitalize="none"
           style="flex:1; padding:10px 12px; height:40px;"
         />
-        <button @click="addName" style="height:40px; padding:0 14px; white-space:nowrap;">追加</button>
+        <button class="ghost" @click="addName" style="height:40px; padding:0 14px; white-space:nowrap;">追加</button>
       </div>
 
       <!-- メンバー一覧 -->
