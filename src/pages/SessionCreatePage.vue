@@ -1,12 +1,56 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../api/supabase'
 
 const router = useRouter()
-const title = ref('')              // ← セッション名
-const membersText = ref('A\nB\nC')
+
+// セッション名
+const title = ref('')
+
+// メンバーUI
+const nameInput = ref('')
+const names = ref([]) // ここに追加したメンバーがたまる
+const inputEl = ref(null)
 const loading = ref(false)
+
+// 入力正規化（空白削除・全角空白対応）
+function normalizeName(s) {
+  return s.replace(/\s+/g, ' ').replace(/^[\s　]+|[\s　]+$/g, '')
+}
+
+// 追加（Enter or ボタン）
+function addName() {
+  const raw = nameInput.value
+  // カンマ / 改行ペーストで一気に複数追加もOK
+  if (raw.includes(',') || raw.includes('\n')) {
+    const parts = raw.split(/[,|\n]/).map(normalizeName).filter(Boolean)
+    for (const p of parts) pushUnique(p)
+    nameInput.value = ''
+    return focusInput()
+  }
+  const n = normalizeName(raw)
+  if (!n) return
+  pushUnique(n)
+  nameInput.value = ''
+  focusInput()
+}
+
+// 重複を入れない
+function pushUnique(n) {
+  if (names.value.some(x => x === n)) return
+  // 20人くらいまでの軽いガード（必要なら調整）
+  if (names.value.length >= 50) return alert('メンバーは最大50人まで')
+  names.value.push(n)
+}
+
+function removeName(idx) {
+  names.value.splice(idx, 1)
+}
+
+function focusInput() {
+  nextTick(() => inputEl.value?.focus())
+}
 
 function genToken(bits = 128) {
   const a = new Uint8Array(bits/8); crypto.getRandomValues(a)
@@ -15,45 +59,69 @@ function genToken(bits = 128) {
 
 async function createSession() {
   if (!title.value.trim()) return alert('タイトルを入れてください')
-  const names = membersText.value.split('\n').map(s=>s.trim()).filter(Boolean)
-  if (names.length === 0) return alert('メンバーを1人以上入れてください')
+  if (names.value.length === 0) return alert('メンバーを1人以上追加してください')
 
   loading.value = true
   const token = genToken()
 
-  // ① sessions へ title と token を保存（created_at は DB が自動）
+  // 1) セッション作成（created_at は DB の default now() に任せる）
   const { data: sess, error: e1 } = await supabase
     .from('sessions')
     .insert([{ title: title.value, token }])
     .select('id')
     .single()
-  if (e1 || !sess) { loading.value=false; return alert(e1?.message ?? 'sessions insert失敗') }
+  if (e1 || !sess) {
+    loading.value = false
+    return alert(e1?.message ?? 'sessions insert 失敗')
+  }
 
-  // ② members を一括作成
-  const rows = names.map(n => ({ session_id: sess.id, name: n, active: true }))
+  // 2) メンバーを一括作成
+  const rows = names.value.map(n => ({ session_id: sess.id, name: n, active: true }))
   const { error: e2 } = await supabase.from('members').insert(rows)
-  if (e2) { loading.value=false; return alert(e2.message) }
+  if (e2) {
+    loading.value = false
+    return alert(e2.message)
+  }
 
   loading.value = false
-  router.push(`/s/${sess.id}/${token}`)   // ③ 自動遷移
+  router.push(`/s/${sess.id}/${token}`)
 }
 </script>
 
 <template>
   <main class="container">
-    <div class="card">
-      <h2 style="margin:0 0 8px">セッション作成</h2>
-      <div class="spacer"></div>
+    <div class="card" style="display:flex; flex-direction:column; gap:12px;">
 
       <label class="small">タイトル</label>
-      <input v-model="title" placeholder="名古屋旅行 1日目" />
+      <input v-model="title" placeholder="名古屋旅行" />
 
-      <div class="spacer"></div>
-      <label class="small">メンバー（1行に1人）</label>
-      <textarea v-model="membersText" rows="6" placeholder="A&#10;B&#10;C"></textarea>
+      <!-- メンバー入力欄 -->
+      <label class="small" style="margin-top:4px;">メンバー名</label>
+      <div class="row" style="gap:8px; align-items:center;">
+        <input
+          ref="inputEl"
+          v-model="nameInput"
+          placeholder="あおい"
+          @keyup.enter.prevent="addName"
+          autocomplete="off"
+          autocapitalize="none"
+          style="flex:1; padding:10px 12px; height:40px;"
+        />
+        <button @click="addName" style="height:40px; padding:0 14px; white-space:nowrap;">追加</button>
+      </div>
 
-      <div class="spacer"></div>
-      <button :disabled="loading" @click="createSession" style="width:100%">作成して入室</button>
+      <!-- メンバー一覧 -->
+      <div class="row" style="gap:6px; flex-wrap:wrap;">
+        <span v-for="(n,i) in names" :key="i"
+          style="display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid #eee; border-radius:999px; background:#fff; font-size:14px;">
+          {{ n }}
+          <button class="ghost" style="padding:2px 6px; font-size:14px;" @click="removeName(i)">×</button>
+        </span>
+      </div>
+
+      <button :disabled="loading" @click="createSession" style="width:100%; margin-top:8px;">
+        グループを作成
+      </button>
     </div>
   </main>
 </template>

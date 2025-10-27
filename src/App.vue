@@ -5,7 +5,7 @@
       <div class="brand-name">waliga</div>
       <div style="margin-left:auto; display:flex; gap:8px;">
         <router-link to="/" style="text-decoration:none;">
-          <button class="ghost">新しいセッション</button>
+          <button class="ghost">新しいイベント</button>
         </router-link>
       </div>
     </div>

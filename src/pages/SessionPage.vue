@@ -99,52 +99,54 @@ onMounted(async () => {
     .on('postgres_changes',{event:'*',schema:'public',table:'members',filter:`session_id=eq.${sessionId}`},()=>loadAll())
     .subscribe()
 })
+
 </script>
 
 <template>
   <main class="container" style="display:flex; flex-direction:column; gap:14px;">
     <!-- ここが新規：セッション名と作成日 -->
     <div class="card" v-if="session">
-      <div style="display:flex; align-items:center; justify-content:space-between;">
-        <div>
-          <h2 style="margin:0">{{ session.title || 'セッション' }}</h2>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+        <div style="min-width:0">
+          <h2 style="margin:0; display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            <span style="overflow:hidden; text-overflow:ellipsis;">{{ session.title || 'セッション' }}</span>
+            <!-- 編集ページへ遷移 -->
+            <button class="icon-btn-quiet" @click="$router.push(`/s/${sessionId}/${token}/edit`)" title="編集">✏️</button>
+          </h2>
           <div class="small">作成日: {{ createdLabel }}</div>
         </div>
-        <div style="display:flex; gap:8px;">
+        <div class="row" style="gap:8px; flex-shrink:0;">
           <button class="ghost" @click="copyLink">共有</button>
         </div>
       </div>
     </div>
 
-    <div class="card">
-      <h3 style="margin:0 0 8px;">支払い登録</h3>
-      <label class="small">払った人</label>
+    <div class="maincard">
+      <input v-model="memo" placeholder="夕食代など" />
+
+      <div class="spacer"></div>
       <select v-model.number="payerId">
         <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
       </select>
 
       <div class="spacer"></div>
-      <label class="small">払ってもらった人</label>
-      <div class="row">
-        <label v-for="m in members" :key="m.id" style="display:flex; gap:6px; align-items:center;">
-          <input type="checkbox" :value="m.id" v-model="selected" /> {{ m.name }}
+      
+      <div class="chip-list">
+        <label v-for="m in members" :key="m.id" class="chip">
+          <input type="checkbox" :value="m.id" v-model="selected" />
+          <span>{{ m.name }}</span>
         </label>
       </div>
 
       <div class="spacer"></div>
-      <label class="small">金額</label>
+      
       <input type="number" v-model.number="amount" min="1" inputmode="numeric" placeholder="3000" />
-
       <div class="spacer"></div>
-      <label class="small">用途</label>
-      <input v-model="memo" placeholder="夕食代など" />
-
-      <div class="spacer"></div>
-      <button :disabled="loading" @click="addExpense" style="width:100%;">記録する</button>
+      <button class="btn-register" :disabled="loading" @click="addExpense" style="width:100%;">登録する</button>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">きっちり清算</h3>
+      <h3 style="margin:0 0 8px;">清算ルート</h3>
       <div v-if="edges.length===0" class="small">清算は不要です</div>
       <ul v-else class="list">
         <li v-for="(e,i) in edges" :key="i">
@@ -154,7 +156,7 @@ onMounted(async () => {
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">支払い履歴</h3>
+      <h3 style="margin:0 0 8px;">立て替え履歴</h3>
       <ul class="list">
         <li v-for="(e,i) in expenses" :key="i">
           <span class="badge">{{ e.amount_jpy }} 円</span>
