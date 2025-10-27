@@ -111,21 +111,20 @@ onMounted(async () => {
           <div class="small">作成日: {{ createdLabel }}</div>
         </div>
         <div style="display:flex; gap:8px;">
-          <button class="ghost" @click="$router.push('/')">新しいセッション</button>
-          <button class="ghost" @click="copyLink">リンクをコピー</button>
+          <button class="ghost" @click="copyLink">共有</button>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">出費追加</h3>
-      <label class="small">支払者</label>
+      <h3 style="margin:0 0 8px;">支払い登録</h3>
+      <label class="small">払った人</label>
       <select v-model.number="payerId">
         <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
       </select>
 
       <div class="spacer"></div>
-      <label class="small">対象メンバー</label>
+      <label class="small">払ってもらった人</label>
       <div class="row">
         <label v-for="m in members" :key="m.id" style="display:flex; gap:6px; align-items:center;">
           <input type="checkbox" :value="m.id" v-model="selected" /> {{ m.name }}
@@ -133,19 +132,19 @@ onMounted(async () => {
       </div>
 
       <div class="spacer"></div>
-      <label class="small">金額（円）</label>
+      <label class="small">金額</label>
       <input type="number" v-model.number="amount" min="1" inputmode="numeric" placeholder="3000" />
 
       <div class="spacer"></div>
-      <label class="small">メモ</label>
+      <label class="small">用途</label>
       <input v-model="memo" placeholder="夕食代など" />
 
       <div class="spacer"></div>
-      <button :disabled="loading" @click="addExpense" style="width:100%;">追加する</button>
+      <button :disabled="loading" @click="addExpense" style="width:100%;">記録する</button>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">清算案</h3>
+      <h3 style="margin:0 0 8px;">きっちり清算</h3>
       <div v-if="edges.length===0" class="small">清算は不要です</div>
       <ul v-else class="list">
         <li v-for="(e,i) in edges" :key="i">
@@ -155,13 +154,14 @@ onMounted(async () => {
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">出費一覧</h3>
+      <h3 style="margin:0 0 8px;">支払い履歴</h3>
       <ul class="list">
         <li v-for="(e,i) in expenses" :key="i">
-          <b>{{ nameOf(e.payer_member_id) }}</b> が
           <span class="badge">{{ e.amount_jpy }} 円</span>
-          を {{ e.beneficiaries.map(nameOf).join(' / ') }} の分として
-          <span class="small">{{ e.memo ?? '' }}</span>
+          <b>{{ nameOf(e.payer_member_id) }}</b> が
+          <span class="midium">{{ e.memo ?? '' }}</span>
+          を {{ e.beneficiaries.map(nameOf).join(' / ') }} の分まで払った
+          
         </li>
       </ul>
     </div>
