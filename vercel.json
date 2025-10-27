@@ -2,7 +2,13 @@
   "headers": [
     {
       "source": "/(.*)",
-      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }]
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+      ]
     }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/index.html" }
   ]
 }
