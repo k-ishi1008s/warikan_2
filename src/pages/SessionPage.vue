@@ -47,7 +47,7 @@ async function loadAll() {
   // ③ 出費
   const { data: e } = await db
     .from('expenses')
-    .select('payer_member_id,amount_jpy,beneficiaries,memo')
+    .select('payer_member_id,amount_jpy,beneficiaries,memo,created_at')
     .eq('session_id', sessionId).order('id')
   expenses.value = e ?? []
 }
@@ -98,6 +98,21 @@ const balances = computed(()=>computeBalances(expenses.value))
 const edges = computed(()=>settleGreedy(balances.value))
 function nameOf(id){ return members.value.find(m=>m.id===id)?.name ?? `#${id}` }
 
+const fmtJPY = (n) =>
+  Number(n).toLocaleString('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 })
+
+const fmtDate = (d) =>
+  d ? new Date(d).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : ''
+
+const initials = (full) => {
+  const s = String(full ?? '').trim()
+  if (!s) return '?'
+  // 和文は先頭1文字、英字は先頭1～2文字（例: "Ishibashi Koutarou" -> "IK"）
+  const ja = s[0]
+  const en = s.split(/\s+/).map(w => w[0]).join('').slice(0,2)
+  return /[^\x00-\x7F]/.test(s) ? ja : en
+}
+
 const createdLabel = computed(() => {
   const d = session.value?.created_at
   if (!d) return ''
@@ -136,7 +151,6 @@ onMounted(async () => {
     </div>
 
     <div class="maincard">
-
       <!-- ① 文章UI：Xが Yの Z代を払って ¥A かかった -->
       <div class="sentence">
 
@@ -186,7 +200,7 @@ onMounted(async () => {
     </div>
 
     <div class="card">
-      <h4 style="margin:0 0 6px;">清算ルート</h4>
+      <h5 style="margin:0 0 6px;">清算ルート</h5>
       <div v-if="edges.length===0" class="small">清算は不要です</div>
       <ul v-else class="list">
         <li v-for="(e,i) in edges" :key="i">
@@ -196,16 +210,30 @@ onMounted(async () => {
     </div>
 
     <div class="card">
-      <h4 style="margin:0 0 6px;">立て替え履歴</h4>
-      <ul class="list">
-        <li v-for="(e,i) in expenses" :key="i">
-          <span class="badge">{{ e.amount_jpy }} 円</span>
-          <b>{{ nameOf(e.payer_member_id) }}</b> が
-          <span class="midium">{{ e.memo ?? '' }}</span>
-          を {{ e.beneficiaries.map(nameOf).join(' / ') }} の分まで払った
-          
-        </li>
-      </ul>
+      <h5 style="margin:0 0 6px;">立て替え履歴</h5>
+      <ul class="expense-cards">
+      <li v-for="(e,i) in expenses" :key="i" class="expense-item">
+        <div class="left">
+          <div class="title">
+            {{ e.memo || '（無題）' }}
+            <!-- 編集が後で要るならここに ✏️ ボタン -->
+            <!-- <button class="edit-ghost" @click="...">✏️</button> -->
+          </div>
+
+          <div class="meta">
+            {{ nameOf(e.payer_member_id) }} が立て替え（{{ fmtDate(e.created_at) }}）
+          </div>
+
+          <div class="chips">
+            <span class="mini-chip" v-for="bid in e.beneficiaries" :key="bid">
+              {{ initials(nameOf(bid)) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="right amount">{{ fmtJPY(e.amount_jpy) }}</div>
+      </li>
+    </ul>
     </div>
   </main>
 </template>

@@ -102,7 +102,7 @@ button:disabled { opacity:.6; }
   border: 1.5px solid #eadfd6;           /* やわらかい線 */
   background: #fff;                     /* クリア */
   color: #1f293790;                       /* 文字は濃すぎない濃紺 */
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   border-radius: 999px;
   min-height: 30px;
@@ -240,3 +240,50 @@ button:disabled { opacity:.6; }
   /* お好みで枠線を細くするなら */
   /* border: 1px solid #E3A16E; */
 }
+
+/* 立て替え履歴 */
+/* 立て替え履歴 */
+/* 立て替え履歴 */
+.expense-cards{
+  list-style:none; padding:0; margin:0;
+  display:flex; flex-direction:column; gap:1px;
+}
+.expense-item{
+  display:flex; justify-content:space-between; align-items:center;
+  gap:12px;
+  padding:12px 2px;
+  background:#fff; border-radius:14px;
+}
+
+/* 左側 */
+.expense-item .title{
+  font-weight:700; line-height:1.0;
+  display:flex; align-items:center; gap:6px;
+}
+.expense-item .meta{
+  margin-top:2px; font-size:12px; color:#6b7280;  /* 灰 */
+}
+.expense-item .chips{
+  margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;
+}
+
+/* Beneficiary の丸チップ */
+.mini-chip{
+  width:24px; height:24px; border-radius:999px;
+  border:1px solid #E08243; color:#E08243; background:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:600;
+}
+
+/* 右側 金額を強調して右寄せ */
+.amount{
+  font-weight:800; font-size:18px; color:#0f172a; /* ほぼ黒 */
+  white-space:nowrap; margin-left:12px; flex-shrink:0;
+}
+
+/* 任意：編集アイコン用の地味ボタン */
+.edit-ghost{
+  border:none; background:transparent; font-size:14px; padding:2px 4px;
+  color:#94a3b8; cursor:pointer;
+}
+.edit-ghost:hover{ color:#64748b; }
