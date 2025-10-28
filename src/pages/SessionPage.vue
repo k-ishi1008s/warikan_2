@@ -53,18 +53,29 @@ async function loadAll() {
 }
 
 async function addExpense() {
-  if (!amount.value || !payerId.value || selected.value.length === 0) return alert('入力が足りません')
+  if (!amount.value || !payerId.value || selected.value.length === 0) {
+    alert('入力が足りません'); return
+  }
+
+  const memoForSave = (() => {
+    const t = (memo.value || '').trim()
+    if (!t) return null
+    return t.endsWith('代') ? t : t + '代'
+  })()
+
   loading.value = true
   const { error } = await db.from('expenses').insert([{
     session_id: sessionId,
     payer_member_id: payerId.value,
     amount_jpy: amount.value,
     beneficiaries: selected.value,
-    memo: memo.value || null
+    memo: memoForSave
   }])
   loading.value = false
+
   if (error) return alert(error.message)
-  amount.value = null; memo.value = ''
+  amount.value = null
+  memo.value = ''
 }
 
 function computeBalances(expenses) {
@@ -125,31 +136,57 @@ onMounted(async () => {
     </div>
 
     <div class="maincard">
-      <input v-model="memo" placeholder="夕食代など" />
 
-      <div class="spacer"></div>
-      <select v-model.number="payerId">
-        <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
-      </select>
+      <!-- ① 文章UI：Xが Yの Z代を払って ¥A かかった -->
+      <div class="sentence">
 
-      <div class="spacer"></div>
-      
-      <div class="chip-list">
-        <label v-for="m in members" :key="m.id" class="chip">
-          <input type="checkbox" :value="m.id" v-model="selected" />
-          <span>{{ m.name }}</span>
-        </label>
+        <!-- 1行目：支払者 -->
+        <select v-model.number="payerId" class="in-sent select">
+          <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
+        </select>
+        <span class="in-sent">が</span>
+
+        <!-- 改行（強制） -->
+        <span class="br"></span>
+
+        <!-- 2行目：受益者（メンバー選択のみ） -->
+        <div class="in-sent chip-list tight">
+          <label v-for="m in members" :key="m.id" class="chip small">
+            <input type="checkbox" :value="m.id" v-model="selected" />
+            <span>{{ m.name }}</span>
+          </label>
+        </div>
+
+        <!-- 改行（強制） -->
+        <span class="br"></span>
+
+        <!-- 3行目：「の」から続く -->
+        <span class="in-sent">の</span>
+
+        <div class="in-sent input-suffix">
+          <input v-model="memo" placeholder="夕食" class="in-sent input" />
+          <span class="suffix">代</span>
+        </div>
+
+        <span class="in-sent">を払って</span>
+
+        <div class="in-sent input-prefix">
+          <span class="prefix">¥</span>
+          <input type="number" v-model.number="amount" min="1" inputmode="numeric"
+                placeholder="3000" class="in-sent input num" />
+        </div>
+
+        <span class="in-sent">かかった。</span>
       </div>
 
       <div class="spacer"></div>
-      
-      <input type="number" v-model.number="amount" min="1" inputmode="numeric" placeholder="3000" />
-      <div class="spacer"></div>
-      <button class="btn-register" :disabled="loading" @click="addExpense" style="width:100%;">登録する</button>
+
+      <!-- 送信 -->
+      <button class="btn-register big" :disabled="loading" @click="addExpense" style="width:100%;">登録する</button>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">清算ルート</h3>
+      <h4 style="margin:0 0 6px;">清算ルート</h4>
       <div v-if="edges.length===0" class="small">清算は不要です</div>
       <ul v-else class="list">
         <li v-for="(e,i) in edges" :key="i">
@@ -159,7 +196,7 @@ onMounted(async () => {
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">立て替え履歴</h3>
+      <h4 style="margin:0 0 6px;">立て替え履歴</h4>
       <ul class="list">
         <li v-for="(e,i) in expenses" :key="i">
           <span class="badge">{{ e.amount_jpy }} 円</span>

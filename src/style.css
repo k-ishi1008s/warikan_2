@@ -87,7 +87,6 @@ button:disabled { opacity:.6; }
   position: relative;
   display: inline-flex;
   align-items: center;
-  margin: 3px;
 }
 
 .chip input[type="checkbox"] {
@@ -103,7 +102,7 @@ button:disabled { opacity:.6; }
   border: 1.5px solid #eadfd6;           /* やわらかい線 */
   background: #fff;                     /* クリア */
   color: #1f293790;                       /* 文字は濃すぎない濃紺 */
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   border-radius: 999px;
   min-height: 30px;
@@ -115,14 +114,6 @@ button:disabled { opacity:.6; }
   color: #e96e14;                        /* テキストだけ温かい色に */
   box-shadow: none;
   border: 1.5px solid #e96e14;
-}
-
-/* calm-blue のときの選択色 */
-.chip.calm-blue input[type="checkbox"]:checked + span{
-  background: var(--calm-blue-bg);
-  border-color: var(--calm-blue-border);
-  color: var(--calm-blue-text);
-  box-shadow: none;
 }
 
 /* フォーカスリングも淡く */
@@ -145,3 +136,107 @@ button:disabled { opacity:.6; }
 }
 .icon-btn-quiet:hover { background: #f7f8fa; }
 .icon-btn-quiet:active { background: #eef0f3; }
+
+/* ============ メインカード周りのcss ============ */
+/* 文書風レイアウト */
+.sentence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 6px;
+  align-items: center;
+  line-height: 1.4;
+}
+
+.sentence .br { flex-basis: 100%; height: 0; }
+
+/* セレクトを文中サイズに（横いっぱいをやめる） */
+.sentence select.in-sent.select {
+  width: 180px !important;      /* ← ここが肝 */
+  display: inline-block;       /* 行内に並べる */
+  min-width: 0;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+/* 各入力ブロックの左右に薄いマージン */
+.sentence .input-suffix{
+  margin-left: 6px;
+  margin-right: 6px;
+}
+
+.sentence .input-prefix {
+  margin-right: 6px;
+}
+
+/* 行内部品の共通 */
+.in-sent { font-size: 16px; font-weight: 800;}
+.in-sent.input {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  background: #fff;
+}
+
+/* セレクトを行内サイズに */
+.in-sent.select {
+  height: 38px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  padding: 0 10px;
+  background: #fff;
+}
+
+/* 金額：¥プリフィックス */
+.input-prefix {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  background: #fff;
+  height: 38px;
+  width: 180px !important; 
+}
+.input-prefix .prefix {
+  padding: 0 8px 0 10px;
+  opacity: 0.7;
+}
+.input-prefix .input.num {
+  border: none;
+  height: 36px;
+  padding: 0 10px 0 0;
+  width: 110px;           /* ここで横幅調整 */
+  outline: none;
+}
+
+/* メモ：「代」サフィックス */
+.input-suffix {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  background: #fff;
+  height: 38px;
+  width: 152px !important; 
+}
+.input-suffix .input {
+  border: none;
+  height: 36px;
+  padding: 0 6px 0 10px;
+  width: 120px;           /* ここで横幅調整 */
+  outline: none;
+}
+.input-suffix .suffix {
+  padding: 0 10px 0 3px;
+  opacity: 0.7;
+}
+
+/* 受益者チップの間隔をさらに詰める */
+.chip-list.tight { gap: 0px; }        /* ← 8px → 4px など好みで */
+.chip.small {
+  padding: 4px 6px;                  /* ← 6px 12px より詰める */
+  font-size: 12.5px;                  /* ← 小さめに */
+  border-radius: 999px;
+  /* お好みで枠線を細くするなら */
+  /* border: 1px solid #E3A16E; */
+}
