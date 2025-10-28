@@ -113,7 +113,7 @@ async function createSession() {
       <!-- メンバー一覧 -->
       <div class="row" style="gap:6px; flex-wrap:wrap;">
         <span v-for="(n,i) in names" :key="i"
-          style="display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid #eee; border-radius:999px; background:#fff; font-size:14px;">
+          style="display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid #eee; border-radius:999px; background:#fff; font-size:13px; font-weight: 800;">
           {{ n }}
           <button class="ghost" style="padding:2px 6px; font-size:14px;" @click="removeName(i)">×</button>
         </span>

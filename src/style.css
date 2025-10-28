@@ -103,7 +103,7 @@ button:disabled { opacity:.6; }
   border: 1.5px solid #eadfd6;           /* やわらかい線 */
   background: #fff;                     /* クリア */
   color: #1f293790;                       /* 文字は濃すぎない濃紺 */
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   border-radius: 999px;
   min-height: 30px;
