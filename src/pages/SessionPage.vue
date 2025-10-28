@@ -10,7 +10,10 @@ const sessionId = route.params.id; const token = route.params.token
 const db = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY,
-  { global: { headers: { 'x-session-token': String(token) } } }
+  {
+    global: { headers: { 'x-session-token': String(token) } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  }
 )
 
 // 追加：セッションの情報を保持
