@@ -68,10 +68,10 @@ button:disabled { opacity:.6; }
 /* ============ 2) 「登録する」専用の大きめボタン ============ */
 .btn-register {
   width: 100%;
-  font-size: 13px;      /* ← 他より一段大きく */
+  font-size: 16px;      /* ← 他より一段大きく */
   font-weight: 900;
   padding: 10px 18px;
-  border-radius: 20px;
+  border-radius: 14px;
 }
 
 
