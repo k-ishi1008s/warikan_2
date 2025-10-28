@@ -258,13 +258,25 @@ button:disabled { opacity:.6; }
 /* 左側 */
 .expense-item .title{
   font-weight:700; line-height:1.0;
-  display:flex; align-items:center; gap:6px;
+  display:flex; align-items:center; gap:1px;
 }
 .expense-item .meta{
   margin-top:2px; font-size:12px; color:#6b7280;  /* 灰 */
 }
 .expense-item .chips{
   margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;
+}
+
+.expense-item .title-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 4px; /* くっつけすぎない絶妙距離 */
+}
+
+.expense-item .title-row .title {
+  flex: 0 0 auto !important; /* ←これが一番重要 */
+  margin:0 ;
 }
 
 /* Beneficiary の丸チップ */
@@ -287,3 +299,15 @@ button:disabled { opacity:.6; }
   color:#94a3b8; cursor:pointer;
 }
 .edit-ghost:hover{ color:#64748b; }
+
+/* 危険系ボタン */
+.danger {
+  background: #fff;
+  color: #c00;
+  border: 1px solid #c00;
+  padding: 12px;
+  border-radius: 14px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+}

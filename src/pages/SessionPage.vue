@@ -47,7 +47,7 @@ async function loadAll() {
   // ③ 出費
   const { data: e } = await db
     .from('expenses')
-    .select('payer_member_id,amount_jpy,beneficiaries,memo,created_at')
+    .select('id,payer_member_id,amount_jpy,beneficiaries,memo,created_at')
     .eq('session_id', sessionId).order('id')
   expenses.value = e ?? []
 }
@@ -190,7 +190,7 @@ onMounted(async () => {
                 placeholder="3000" class="in-sent input num" />
         </div>
 
-        <span class="in-sent">かかった。</span>
+        <span class="in-sent">かかった</span>
       </div>
 
       <div class="spacer"></div>
@@ -212,12 +212,16 @@ onMounted(async () => {
     <div class="card">
       <h5 style="margin:0 0 6px;">立て替え履歴</h5>
       <ul class="expense-cards">
-      <li v-for="(e,i) in expenses" :key="i" class="expense-item">
+      <li v-for="(e,i) in expenses" :key="e.id ?? i" class="expense-item">
         <div class="left">
-          <div class="title">
-            {{ e.memo || '（無題）' }}
-            <!-- 編集が後で要るならここに ✏️ ボタン -->
-            <!-- <button class="edit-ghost" @click="...">✏️</button> -->
+          <div class="title-row">
+            <b class="title">
+                {{ e.memo ?? '（無題）' }}
+            </b>
+            <button class="icon-btn-quiet"
+              @click="e?.id ? $router.push(`/s/${sessionId}/${token}/expense/${e.id}/edit`) : alert('この履歴は編集できません')"
+              title="編集"
+            >✏️</button>
           </div>
 
           <div class="meta">
