@@ -91,11 +91,11 @@ async function createSession() {
 
   try {
     await navigator.clipboard.writeText(msg)
-    alert('作成完了！忘れやん内にLINEで共有しときや')
+    alert('リンクコピー完了！忘れやん内にLINEで共有しときや')
   } catch (err) {
     console.warn('clipboard failed:', err)
     // フォールバック：URLだけでもアラートに出す
-    alert(`リンク：\n${newUrl}\n\n手動でコピーしてね`)
+    alert('リンクコピー完了！忘れやん内にLINEで共有しときや')
   }
 
   // 4) 最後に遷移
