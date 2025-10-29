@@ -64,7 +64,7 @@ async function createSession() {
   loading.value = true
   const token = genToken()
 
-  // 1) セッション作成（created_at は DB の default now() に任せる）
+  // 1) sessions
   const { data: sess, error: e1 } = await supabase
     .from('sessions')
     .insert([{ title: title.value, token }])
@@ -75,7 +75,7 @@ async function createSession() {
     return alert(e1?.message ?? 'sessions insert 失敗')
   }
 
-  // 2) メンバーを一括作成
+  // 2) members
   const rows = names.value.map(n => ({ session_id: sess.id, name: n, active: true }))
   const { error: e2 } = await supabase.from('members').insert(rows)
   if (e2) {
@@ -84,16 +84,22 @@ async function createSession() {
   }
 
   loading.value = false
-  router.push(`/s/${sess.id}/${token}`)
 
-  const newUrl = `${location.origin}/s/${newId}/${token}`
+  // 3) 共有テキストを先にコピー（補間はバッククォート）
+  const newUrl = `${location.origin}/s/${sess.id}/${token}`
+  const msg = `waligaで会計は管理。waligaで会計は管理。waligaで会計は管理。\n${newUrl}`
 
-  const msg =
-  'waligaで会計は管理。waligaで会計は管理。waligaで会計は管理。${newUrl}'
-
-  navigator.clipboard.writeText(msg).then(() => {
+  try {
+    await navigator.clipboard.writeText(msg)
     alert('作成完了！忘れやん内にLINEで共有しときや')
-  })
+  } catch (err) {
+    console.warn('clipboard failed:', err)
+    // フォールバック：URLだけでもアラートに出す
+    alert(`リンク：\n${newUrl}\n\n手動でコピーしてね`)
+  }
+
+  // 4) 最後に遷移
+  router.push(`/s/${sess.id}/${token}`)
 }
 </script>
 
