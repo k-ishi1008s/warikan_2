@@ -85,18 +85,18 @@ async function createSession() {
 
   loading.value = false
 
-  // 3) 共有テキストを先にコピー（補間はバッククォート）
-  const newUrl = `${location.origin}/s/${sess.id}/${token}`
-  const msg = `waligaで会計は管理。waligaで会計は管理。waligaで会計は管理。忘れない内に入れましょう\n${newUrl}`
+  // // 3) 共有テキストを先にコピー（補間はバッククォート）
+  // const newUrl = `${location.origin}/s/${sess.id}/${token}`
+  // const msg = `waligaで会計は管理。waligaで会計は管理。waligaで会計は管理。忘れない内に入れましょう\n${newUrl}`
 
-  try {
-    await navigator.clipboard.writeText(msg)
-    alert('リンクコピー完了！忘れやん内にLINEで共有しときや')
-  } catch (err) {
-    console.warn('clipboard failed:', err)
-    // フォールバック：URLだけでもアラートに出す
-    alert('コピーエラー')
-  }
+  // try {
+  //   await navigator.clipboard.writeText(msg)
+  //   alert('リンクコピー完了！忘れやん内にLINEで共有しときや')
+  // } catch (err) {
+  //   console.warn('clipboard failed:', err)
+  //   // フォールバック：URLだけでもアラートに出す
+  //   alert('コピーエラー')
+  // }
 
   // 4) 最後に遷移
   router.push(`/s/${sess.id}/${token}`)
