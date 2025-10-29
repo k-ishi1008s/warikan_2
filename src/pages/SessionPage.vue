@@ -130,7 +130,8 @@ const createdLabel = computed(() => {
 })
 
 function copyLink(){ 
-  const msg = `会計はここに全部つっこむように！！4946 ${location.href}`
+  const msg = `会計はここに全部つっこむように！！4946 
+  ${location.href}`;
   navigator.clipboard.writeText(msg).then(()=>alert('コピー完了！すぐにLINEで共有！！')) 
 }
 
