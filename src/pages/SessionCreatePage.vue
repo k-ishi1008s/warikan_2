@@ -95,7 +95,7 @@ async function createSession() {
   } catch (err) {
     console.warn('clipboard failed:', err)
     // フォールバック：URLだけでもアラートに出す
-    alert('リンクコピー完了！忘れやん内にLINEで共有しときや')
+    alert('コピーエラー')
   }
 
   // 4) 最後に遷移
