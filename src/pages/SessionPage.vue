@@ -129,7 +129,10 @@ const createdLabel = computed(() => {
   return new Date(d).toLocaleDateString('ja-JP', { year:'numeric', month:'short', day:'numeric' })
 })
 
-function copyLink(){ navigator.clipboard.writeText(location.href).then(()=>alert('コピー完了！すぐにLINEで共有！！')) }
+function copyLink(){ 
+  const msg = '会計はここに全部つっこむように！！4946 ${location.href}'
+  navigator.clipboard.writeText(msg).then(()=>alert('コピー完了！すぐにLINEで共有！！')) 
+}
 
 onMounted(async () => {
   await loadAll()
