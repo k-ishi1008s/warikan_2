@@ -85,6 +85,15 @@ async function createSession() {
 
   loading.value = false
   router.push(`/s/${sess.id}/${token}`)
+
+  const newUrl = `${location.origin}/s/${newId}/${token}`
+
+  const msg =
+  'waligaで会計は管理。waligaで会計は管理。waligaで会計は管理。${newUrl}'
+
+  navigator.clipboard.writeText(msg).then(() => {
+    alert('作成完了！忘れやん内にLINEで共有しときや')
+  })
 }
 </script>
 
