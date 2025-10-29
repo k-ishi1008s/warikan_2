@@ -87,7 +87,7 @@ async function createSession() {
 
   // 3) 共有テキストを先にコピー（補間はバッククォート）
   const newUrl = `${location.origin}/s/${sess.id}/${token}`
-  const msg = `waligaで会計は管理。waligaで会計は管理。waligaで会計は管理。\n${newUrl}`
+  const msg = `waligaで会計は管理。waligaで会計は管理。waligaで会計は管理。忘れない内に入れましょう\n${newUrl}`
 
   try {
     await navigator.clipboard.writeText(msg)
