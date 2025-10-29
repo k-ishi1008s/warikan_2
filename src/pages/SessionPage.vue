@@ -98,6 +98,16 @@ const balances = computed(()=>computeBalances(expenses.value))
 const edges = computed(()=>settleGreedy(balances.value))
 function nameOf(id){ return members.value.find(m=>m.id===id)?.name ?? `#${id}` }
 
+//合計と一人当たり
+const totalAmount = computed(()=>
+  (expenses.value ??[]).reduce((sum,e)=>sum + (e?.amount_jpy ?? 0),0)
+)
+// active=trueの人数
+const headcount = computed(() => (members.value ?? []).length)
+const perPersonAmount = computed(() =>
+  headcount.value > 0 ? Math.floor(totalAmount.value / headcount.value) : 0
+)
+
 const fmtJPY = (n) =>
   Number(n).toLocaleString('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 })
 
@@ -137,12 +147,13 @@ onMounted(async () => {
     <div class="card" v-if="session">
       <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
         <div style="min-width:0">
-          <h2 style="margin:0; display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-            <span style="overflow:hidden; text-overflow:ellipsis;">{{ session.title || 'セッション' }}</span>
+          <div class="small">作成日: {{ createdLabel }}</div> <!-- 作成日 -->
+          <h3 style="margin:0; display:flex; align-items:flex-start; gap:6px; white-space:normal; width: 100%; overflow-wrap: break-word;">
+            <span style="flex:1 1 auto; overflow-wrap: break-word;">{{ session.title || 'セッション' }}</span>
             <!-- 編集ページへ遷移 -->
             <button class="icon-btn-quiet" @click="$router.push(`/s/${sessionId}/${token}/edit`)" title="編集">✏️</button>
-          </h2>
-          <div class="small">作成日: {{ createdLabel }}</div>
+          </h3>
+          <div class="small"> {{ members.map(m => m.name).join('・') }} </div> <!-- メンバー一覧 -->
         </div>
         <div class="row" style="gap:8px; flex-shrink:0;">
           <button class="ghost" @click="copyLink">共有</button>
@@ -199,18 +210,39 @@ onMounted(async () => {
       <button class="btn-register big" :disabled="loading" @click="addExpense" style="width:100%;">登録する</button>
     </div>
 
-    <div class="card">
-      <h5 style="margin:0 0 6px;">清算ルート</h5>
-      <div v-if="edges.length===0" class="small">清算は不要です</div>
-      <ul v-else class="list">
-        <li v-for="(e,i) in edges" :key="i">
-          {{ nameOf(e.from) }} → {{ nameOf(e.to) }} : <b>{{ e.amount }}</b> 円
+    <div class="card card--frameless">
+      <div class="section">
+        <h5 style="margin:0 0 6px;">清算ルート</h5>
+      </div>
+      <div v-if="edges.length === 0" class="small">清算は不要です</div>
+      <ul v-else class="list routes">
+        <li v-for="(e,i) in edges" :key="i" class="route-row">
+          <span class="route-who">
+            <b>{{ nameOf(e.from) }}</b> → <b>{{ nameOf(e.to) }}</b>
+          </span>
+          <span class="route-amt">{{ fmtJPY(e.amount) }}</span>
         </li>
       </ul>
+      
+      <div class="settle-summary split2 badges">
+        <div class="col left">
+          <!-- <span class="label">合計</span> -->
+          <span class="badge-circle total">計</span>
+          <span class="amount total">{{ fmtJPY(totalAmount) }}</span>
+        </div>
+        <div class="col right">
+          <!-- <span class="label">一人当たり</span> -->
+          <span class="badge-pill per">1人</span>
+          <span class="amount per">{{ fmtJPY(perPersonAmount) }}</span>
+        </div>
+      </div>
+      
     </div>
 
-    <div class="card">
-      <h5 style="margin:0 0 6px;">立て替え履歴</h5>
+    <div class="card card--frameless">
+      <div class="section">
+        <h5 style="margin:0 0 6px;">立て替え履歴</h5>
+      </div>
       <ul class="expense-cards">
       <li v-for="(e,i) in expenses" :key="e.id ?? i" class="expense-item">
         <div class="left">

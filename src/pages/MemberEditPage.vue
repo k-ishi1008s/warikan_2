@@ -82,16 +82,16 @@ function backToSession() {
 <template>
   <main class="container" style="display:flex; flex-direction:column; gap:14px;">
     <div class="card" style="display:flex; flex-direction:column; gap:10px;">
-      <h3 style="margin:0;">イベント名</h3>
+      <!-- <div class="small">作成日: {{ new Date(createdAt).toLocaleDateString('ja-JP', { year:'numeric', month:'short', day:'numeric' }) }}</div> -->
+      <h5 style="margin:0;">イベント名</h5>
       <div class="row" style="gap:8px; align-items:center;">
         <input v-model="title" placeholder="名古屋旅行" style="flex:1; height:40px;" />
         <button class="ghost" :disabled="loading" @click="saveTitle" style="height:40px; padding:0 14px;">保存</button>
       </div>
-      <div class="small">作成日: {{ new Date(createdAt).toLocaleDateString('ja-JP', { year:'numeric', month:'short', day:'numeric' }) }}</div>
     </div>
 
     <div class="card" style="display:flex; flex-direction:column; gap:10px;">
-      <h3 style="margin:0;">メンバー</h3>
+      <h5 style="margin:0;">メンバー</h5>
 
       <!-- 追加行（1行・省スペース） -->
       <div class="row" style="gap:8px; align-items:center;">

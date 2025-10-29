@@ -1,7 +1,7 @@
 :root {
   --bg:#ffffff;
   --fg:#0f172a;
-  --muted:#64748b;
+  --muted:#6e7783;
   --primary:#e96e14;
   --radius:16px;
 
@@ -25,13 +25,21 @@ body {
   line-height: 1.55;
 }
 
-h1,h2,h3 { font-weight: 800; }
+h1,h2 { font-weight: 800; }
+
+h3 { font-weight: 800; font-size: 20px;}
+
+h5 {
+  font-size: 12px;
+  color: #737373; /* Slate-800。好きな色に変えてOK！ */
+}
 
 .container { max-width: 560px; margin: 0 auto; padding: 16px; }
 .header {
-  position: sticky; top:0; z-index:10; backdrop-filter: blur(6px);
+  /* position: sticky; top:0; z-index:10; backdrop-filter: blur(6px);
   background: color-mix(in srgb, var(--bg) 85%, transparent);
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #eee; */
+  position: static;
 }
 .brand { display:flex; align-items:center; gap:10px; padding:12px 16px; }
 .brand-logo { width:22px; height:22px; border-radius:8px; background:var(--primary); }
@@ -39,7 +47,30 @@ h1,h2,h3 { font-weight: 800; }
 
 .card {
   background:#fff; border:1px solid #eee; border-radius: var(--radius); padding:12px;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+
+/* ====== Frameless card: 枠線/影/白背景ナシで抜け感 ====== */
+.card--frameless{
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 1 !important;           /* 箱の中の余白もゼロに */
+}
+
+/* セクションとして中身を並べるための共通コンテナ */
+.section{
+  padding: 0px 0;                 /* 上下だけ余白 */
+}
+
+/* 兄弟セクション間にだけ薄い区切り（点線でも実線でもOK） */
+.section + .section{
+  border-top: 1px dashed #ddd;     /* 気分で #ccc〜#bbb に */
+}
+
+/* セクション用の行（左右にテキストと金額などを配置） */
+.section-row{
+  display:flex; align-items:center; justify-content:space-between;
+  gap: 10px; padding: 6px 0;
 }
 
 .maincard {
@@ -76,7 +107,7 @@ button:disabled { opacity:.6; }
 
 
 .list { padding:0; margin:0; list-style:none; }
-.list li { padding:10px 0; border-bottom:1px dashed #eee; }
+.list li { padding:10px 0; border-bottom:1px dashed #bcbcbc; }
 .badge { display:inline-block; padding:4px 8px; border-radius:999px; background:#fff2e8; color:#a44800; }
 .small { color:var(--muted); font-size:12px; }
 .spacer { height: 10px; }
@@ -251,8 +282,8 @@ button:disabled { opacity:.6; }
 .expense-item{
   display:flex; justify-content:space-between; align-items:center;
   gap:12px;
-  padding:12px 2px;
-  background:#fff; border-radius:14px;
+  padding:8px 2px;
+  border-bottom:1px dashed #bcbcbc;
 }
 
 /* 左側 */
@@ -287,12 +318,6 @@ button:disabled { opacity:.6; }
   font-size:12px; font-weight:600;
 }
 
-/* 右側 金額を強調して右寄せ */
-.amount{
-  font-weight:800; font-size:18px; color:#0f172a; /* ほぼ黒 */
-  white-space:nowrap; margin-left:12px; flex-shrink:0;
-}
-
 /* 任意：編集アイコン用の地味ボタン */
 .edit-ghost{
   border:none; background:transparent; font-size:14px; padding:2px 4px;
@@ -310,4 +335,102 @@ button:disabled { opacity:.6; }
   font-weight: bold;
   text-align: center;
   cursor: pointer;
+}
+
+/* === 清算ルート === */
+.routes { margin: 0; padding: 0; }
+
+.route-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+.route-row:first-child { border-top: 0; }
+
+.route-who { font-weight: 600; }
+
+.amount,
+.route-amt {
+  font-weight: 800;
+  font-size: 18px; /* ← 少し大きくして存在感UP */
+  color: #111;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  margin-left: 12px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+/* 清算サマリ */
+/* 二分の清算サマリ */
+/* 下部サマリ: 左右二分・縦中央 */
+.settle-summary.split2.badges {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  min-height: 20px;
+  align-items: center;            /* 縦中央 */
+}
+
+.settle-summary.split2.badges .col {
+  display: inline-flex;
+  align-items: center;            /* 縦中央 */
+  justify-content: center;        /* 横中央 */
+  gap: 0px;
+}
+
+/* 数字の見た目を少し大きめに */
+.settle-summary.split2.badges .amount {
+  font-weight: 800;
+  font-size: 18px;              /* 好みに応じて 1.4rem などへ */
+  line-height: 1;
+}
+
+/* 色分け */
+.settle-summary.split2.badges .amount.total { color: #d11a2a; } /* 赤 */
+.settle-summary.split2.badges .amount.per   { color: #1666c5; } /* 青 */
+
+/* 丸バッジ（計） */
+.badge-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 1000;
+  font-size: 12px;
+  line-height: 1;
+  border: 0px solid currentColor;
+}
+
+.badge-circle.total {
+  color: #d11a2a;
+  background: #ffe8ea; /* 薄い赤背景（好みで調整） */
+}
+
+/* 角丸ピル（1人） */
+.badge-pill {
+  padding: 3px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 1000;
+  font-size: 12px;
+  line-height: 1;
+  border: 0px solid currentColor;
+  height: 28px;
+}
+
+.badge-pill.per {
+  color: #1666c5;
+  background: #e8f1ff; /* 薄い青背景（好みで調整） */
+}
+
+/* サマリ内は数字の左マージンをさらに詰める（全体には影響させない） */
+.settle-summary.split2.badges .amount {
+  margin-left: 6px;    /* もっと詰めたいなら 4px や 0px */
+  line-height: 1;
 }

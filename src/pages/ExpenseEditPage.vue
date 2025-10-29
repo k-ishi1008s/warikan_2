@@ -107,7 +107,7 @@ onMounted(async () => {
 <template>
   <main class="container" style="display:flex; flex-direction:column; gap:20px;">
 
-    <div class="card">
+    <div class="card card--frameless">
 
       <!-- 入力UI（登録ページと同じデザイン） -->
       <div class="sentence">

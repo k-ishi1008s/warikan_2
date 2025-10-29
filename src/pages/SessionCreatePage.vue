@@ -90,7 +90,7 @@ async function createSession() {
 
 <template>
   <main class="container">
-    <div class="card" style="display:flex; flex-direction:column; gap:12px;">
+    <div class="card card--frameless" style="display:flex; flex-direction:column; gap:12px;">
 
       <label class="small">タイトル</label>
       <input v-model="title" placeholder="名古屋旅行" />
