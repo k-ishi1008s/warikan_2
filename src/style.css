@@ -475,15 +475,4 @@ button:disabled { opacity:.6; }
   background: #e96e1440;
 }
 
-.input-secret {
-  font-size: 12px;          /* 通常より小さめ */
-  font-weight: 900;         /* 少し軽く */
-  padding: 8px 10px;        /* 高さを低く */
-  border-radius: 10px;      /* 既存と馴染む丸み */
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  width: 100%;
-  box-sizing: border-box;
-}
-
 button.ghost-black { background:#e5e5e5; color:#525252; border:0px solid #323232; }

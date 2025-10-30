@@ -222,13 +222,13 @@ function reuseMembers(ev) {
       <div class="row" style="gap:8px; align-items:center; ">
         <input
           v-model="querySurname"
-          class="input-secret"
+          class="input"
           placeholder="みょうじ or 苗字"
           @keyup.enter.prevent="searchBySurname"
-          style="flex:1; border-radius: 10px; padding:10px 12px; height:30px;"
+          style="font-size:15px; flex:1; border-radius: 10px; padding:10px 12px; height:40px;"
         />
         <button class="ghost-black" @click="searchBySurname" :disabled="searching"
-                style="font-size: 13px; border-radius: 10px; height:30px; padding:0 14px; white-space:nowrap;">
+                style="font-size: 13px; border-radius: 10px; height:40px; padding:0 14px; white-space:nowrap;">
           {{ searching ? '検索中…' : '履歴表示' }}
         </button>
       </div>
