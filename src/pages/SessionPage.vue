@@ -79,11 +79,34 @@ async function addExpense() {
 }
 
 function computeBalances(expenses) {
-  const b = {}; for (const e of expenses) {
-    const share = Math.floor(e.amount_jpy / e.beneficiaries.length)
+  const b = {}
+
+  for (const e of expenses) {
+    const ids = (e.beneficiaries ?? []).slice().sort((a,b)=>a-b) // 決定的な順序
+    const k = ids.length
+    if (!k || !e.amount_jpy) continue
+
+    // 基本シェアと余り
+    const base = Math.floor(e.amount_jpy / k)
+    let r = e.amount_jpy % k
+
+    // まず支払者に全額プラス
     b[e.payer_member_id] = (b[e.payer_member_id] ?? 0) + e.amount_jpy
-    for (const m of e.beneficiaries) b[m] = (b[m] ?? 0) - share
-  } return b
+
+    // 受益者に課金（余りは先頭から +1 円ずつ配る）
+    for (let i = 0; i < k; i++) {
+      const id = ids[i]
+      const add = base + (r > 0 ? 1 : 0)
+      b[id] = (b[id] ?? 0) - add
+      if (r > 0) r--
+    }
+  }
+
+  // デバッグ: 合計が0になるか確認（ならないならどこかに欠損がある）
+  // const sum = Object.values(b).reduce((s, v) => s + v, 0)
+  // console.log('balance sum =', sum)
+
+  return b
 }
 function settleGreedy(bal) {
   const P=[],N=[]; for (const [id,v] of Object.entries(bal)) {
@@ -141,6 +164,29 @@ onMounted(async () => {
     .on('postgres_changes',{event:'*',schema:'public',table:'expenses',filter:`session_id=eq.${sessionId}`},()=>loadAll())
     .on('postgres_changes',{event:'*',schema:'public',table:'members',filter:`session_id=eq.${sessionId}`},()=>loadAll())
     .subscribe()
+})
+
+// ルート表示/個人表示のトグル
+const showPersonal = ref(false)
+
+// 個人ごとの負担額（受益者シェア合計）
+const personalSpends = computed(() => {
+  const map = new Map()
+  for (const e of (expenses.value ?? [])) {
+    if (!e?.beneficiaries?.length || !e.amount_jpy) continue
+    const share = Math.floor(e.amount_jpy / e.beneficiaries.length)
+    for (const bid of e.beneficiaries) {
+      map.set(bid, (map.get(bid) || 0) + share)
+    }
+  }
+  // メンバー全員を0込みで出す
+  const rows = (members.value ?? []).map(m => ({
+    id: m.id,
+    amount: map.get(m.id) || 0
+  }))
+  // 金額降順
+  rows.sort((a,b)=> b.amount - a.amount)
+  return rows
 })
 
 </script>
@@ -215,29 +261,43 @@ onMounted(async () => {
     </div>
 
     <div class="card card--frameless">
-      <div class="section">
+      <div class="section" style="display:flex; align-items:center; justify-content:space-between;">
         <h5 style="margin:0 0 6px;">清算ルート</h5>
+        <button class="link-small" :class="{ active: showPersonal}" @click="showPersonal = !showPersonal">
+          個人
+        </button>
       </div>
-      <div v-if="edges.length === 0" class="small">清算は不要です</div>
-      <ul v-else class="list routes">
-        <li v-for="(e,i) in edges" :key="i" class="route-row">
-          <span class="route-who">
-            <b>{{ nameOf(e.from) }}</b> → <b>{{ nameOf(e.to) }}</b>
-          </span>
-          <span class="route-amt">{{ fmtJPY(e.amount) }}</span>
-        </li>
-      </ul>
-      
-      <div class="settle-summary split2 badges">
-        <div class="col left">
-          <!-- <span class="label">合計</span> -->
-          <span class="badge-circle total">計</span>
-          <span class="amount total">{{ fmtJPY(totalAmount) }}</span>
-        </div>
-        <div class="col right">
-          <!-- <span class="label">一人当たり</span> -->
-          <span class="badge-pill per">1人</span>
-          <span class="amount per">{{ fmtJPY(perPersonAmount) }}</span>
+      <div v-if="showPersonal">
+        <div v-if="personalSpends.length === 0" class="small">立て替え履歴がありません</div>
+        <ul v-else class="list routes">
+          <li v-for="p in personalSpends" :key="p.id" class="route-row">
+            <span class="route-who"><b>{{ nameOf(p.id) }}</b></span>
+            <span class="route-amt">{{ fmtJPY(p.amount) }}</span>
+          </li>
+        </ul>
+      </div>
+      <div v-else>
+        <div v-if="edges.length === 0" class="small">清算は不要です</div>
+        <ul v-else class="list routes">
+          <li v-for="(e,i) in edges" :key="i" class="route-row">
+            <span class="route-who">
+              <b>{{ nameOf(e.from) }}</b> → <b>{{ nameOf(e.to) }}</b>
+            </span>
+            <span class="route-amt">{{ fmtJPY(e.amount) }}</span>
+          </li>
+        </ul>
+        
+        <div class="settle-summary split2 badges">
+          <div class="col left">
+            <!-- <span class="label">合計</span> -->
+            <span class="badge-circle total">計</span>
+            <span class="amount total">{{ fmtJPY(totalAmount) }}</span>
+          </div>
+          <div class="col right">
+            <!-- <span class="label">一人当たり</span> -->
+            <span class="badge-pill per">1人</span>
+            <span class="amount per">{{ fmtJPY(perPersonAmount) }}</span>
+          </div>
         </div>
       </div>
       
