@@ -434,3 +434,56 @@ button:disabled { opacity:.6; }
   margin-left: 6px;    /* もっと詰めたいなら 4px や 0px */
   line-height: 1;
 }
+
+/* ======= 履歴機能ようボタン ======= */
+
+/* ベース */
+.btn-mini {
+  font-size: 13px;
+  padding: 4px 8px;
+  height: 32px;
+  border-radius: 999px;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+/* ゴーストボタンの小型版 */
+.btn-mini.orange {
+  background: #e5e5e5;
+  border: 0px solid #525252;
+  color: #525252;
+}
+.btn-mini.orange:hover {
+  background: #fff5eb;
+}
+.btn-mini.orange:active {
+  background: #ffe5cc;             /* 押したときのフィードバック */
+}
+
+/* 編集ボタン（青系）の小型版 */
+.btn-mini.blue {
+  background: #888888;
+  border: 0px solid #525252;
+  color: #fff;
+}
+.btn-mini.blue:hover {
+  background: #e96e1440;
+}
+
+.input-secret {
+  font-size: 12px;          /* 通常より小さめ */
+  font-weight: 900;         /* 少し軽く */
+  padding: 8px 10px;        /* 高さを低く */
+  border-radius: 10px;      /* 既存と馴染む丸み */
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button.ghost-black { background:#e5e5e5; color:#525252; border:0px solid #323232; }
