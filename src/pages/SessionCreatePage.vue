@@ -192,7 +192,7 @@ function reuseMembers(ev) {
         <input
           ref="inputEl"
           v-model="nameInput"
-          placeholder="メンバー名"
+          placeholder="メンバー苗字"
           @keyup.enter.prevent="addName"
           autocomplete="off"
           autocapitalize="none"
@@ -223,7 +223,7 @@ function reuseMembers(ev) {
         <input
           v-model="querySurname"
           class="input"
-          placeholder="みょうじ or 苗字"
+          placeholder="苗字"
           @keyup.enter.prevent="searchBySurname"
           style="flex:1; border-radius: 10px; padding:10px 12px; height:40px;"
         />
