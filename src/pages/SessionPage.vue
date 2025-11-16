@@ -49,7 +49,11 @@ async function loadAll() {
     .from('expenses')
     .select('id,payer_member_id,amount_jpy,beneficiaries,memo,created_at')
     .eq('session_id', sessionId).order('id')
-  expenses.value = e ?? []
+  expenses.value = (e ?? []).slice().sort((a, b) => {
+    const da = new Date(a?.created_at ?? 0).getTime()
+    const db = new Date(b?.created_at ?? 0).getTime()
+    return db - da
+  })
 }
 
 async function addExpense() {
